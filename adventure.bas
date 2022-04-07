@@ -1,9 +1,4 @@
-10 print "A very small adventure!"
-20 print "-----------------------"
-30 print "A procedurally generated adventure"
-35 print "game, where no two adventures are "
-40 print "the same."
-45 print
+10 gosub 8000
 
 50 def fnmod(x) = x - int(x/25) * 25 
 55 def fnci(x) = (map(i,1) and x) = x
@@ -12,33 +7,36 @@
 70 def fncs(x) = (map(i+25,1) and x) = x
 75 def fncw(x) = (map(i-1,1) and x) = x
 
-100 dim map(250, 3) : rem 25 x 10, mon, treasure
+100 dim map(250, 4) : rem 25 x 10, mon, treasure, wpn
 105 dim ms(40, 3) : rem lbl, hp, str
 
-120 print "Generating map..."
-125 for i = 1 to 250
-130 gosub 400 : rem gen exits
-135 next i
+110 print "Generating map..."
+115 for i = 1 to 250
+120 gosub 400 : rem gen exits
+125 next i
 
-140 print "Generating monsters..."
-145 for i = 1 to 40
-150 gosub 500 : rem gen monsters
-155 next i
+130 print "Generating monsters..."
+135 for i = 1 to 40
+140 gosub 500 : rem gen monsters
+145 next i
 
-160 print "Generating treasure..."
-165 for i = 1 to 40
-170 gosub 600 : rem gen treasure
-175 next i
+150 print "Generating treasure..."
+155 for i = 1 to 40 : gosub 600 : next i
 
-180 ar = int(rnd(1) * 250) + 1 : rem cur room
-185 ah = int(rnd(1) * 10) + 10 : rem hp
-186 at = int(rnd(1) * 10) + 1 : rem strength
-190 let as = 0
+170 print "Generating items..."
+175 for i = 1 to 10 : gosub 700 : next i
+180 for i = 1 to 10 : gosub 700 : next i
 
-200 rem game cycle
-210 gosub 1500 : rem print room def
-220 gosub 2000 : rem input next act
-230 goto 200
+190 ar = int(rnd(1) * 250) + 1 : rem cur room
+195 ah = int(rnd(1) * 10) + 10 : rem hp
+200 at = int(rnd(1) * 10) + 1 : rem strength
+205 ai = 0 : rem inventory
+210 as = 0 : rem score
+
+250 rem game cycle
+255 gosub 1500 : rem print room def
+260 gosub 2000 : rem input next act
+265 goto 250
 
 310 goto 9000 : end
 
@@ -77,58 +75,64 @@
 600 rem generate treasure, input: i
 605 r = int(rnd(1) * 250) + 1 : rem room
 610 if map(r, 1) = 0 then goto 605
-612 print r
 615 map(r, 3) = int(rnd(1) * 4) + 1 : rem name
 699 return
+
+700 rem generate items, input: i
+705 r = int(rnd(1) * 250) + 1 : rem room
+710 if map(r, 1) = 0 then goto 605
+715 map(r, 4) = i : rem items escalate
+799 return
 
 1500 rem print room output, input: ar
 1505 i = ar
 
-1510 print : print "Exits:"; i ;
-1515 if fnci(1) then print "N";
-1520 if fnci(2) then print "E";
-1525 if fnci(4) then print "S";
-1530 if fnci(8) then print "W";
+1510 print : print "Exits: "; 
+1515 if fnci(1) then print "North ";
+1520 if fnci(2) then print "East ";
+1525 if fnci(4) then print "South ";
+1530 if fnci(8) then print "West ";
 1535 print
 
 1600 if map(i, 2) = 0 then goto 1700
-1605 m = map(i, 2)
-1610 if ms(m, 1) = 1 then l$ = "Goblin"
-1615 if ms(m, 1) = 2 then l$ = "Elf"
-1620 if ms(m, 1) = 3 then l$ = "Tribble"
-1625 if ms(m, 1) = 4 then l$ = "Wumpus"
-1630 print l$; " appeared! HP:"; ms(m, 2); "Str: " ms(m, 3)
+1605 m = map(i, 2) : q = ms(m, 1) : gosub 7000
+1610 print l$; " appeared! HP:"; ms(m, 2); "Str: " ms(m, 3)
 
-1700 if map(i, 3) = 0 then goto 1990
-1705 m = map(i, 3)
-1710 if m = 1 then l$ = "chest!"
-1715 if m = 2 then l$ = "chalice!"
-1720 if m = 3 then l$ = "fleece!"
-1725 if m = 4 then l$ = "harp!"
-1730 print "Treasure! A golden "; l$; "!"
+1700 if map(i, 3) = 0 then goto 1800
+1705 m = map(i, 3) : q = m : gosub 7100
+1710 print "Treasure! A golden "; l$; "!"
 
-1990 print "You've scored "; as; "/40"
-1995 print "You have "; ah; " HP"
-1997 print "You have "; at; " Str"
+1800 if map(i, 4) = 0 then goto 1900
+1805 m = map(i, 4) : q = m : gosub 7200
+1810 print "A "; l$ ; " lies on the floor"
+
+1900 print
+1910 print "You've scored "; as; "/40"
+1915 print "You have "; ah; " HP"
+1920 print "You have "; at; " Str"
+1930 if ai = 0 goto 1999
+1935 q = ai : gosub 7200
+1940 print "You're carrying a "; l$ ; "(+" ; ai ; ")"
 1999 return
 
-2000 input "Next action"; a$ : a$ = left$(a$,1)
+2000 print : input "Next action"; a$ : a$ = left$(a$,1)
 2005 i = ar
 2010 if map(i, 2) = 0 then goto 2030
 2015 if (a$ = "h" or a$ = "H") then gosub 3000 : goto 2025
 2020 print "You monster stops you from leaving!" 
 2025 goto 2999 : rem combat end
-2030 if map(i,3)<>0 then if (a$="p" or a$="P") then gosub 4000
-2035 if fnci(1) then if (a$ = "n" or a$ = "N") then ar = ar - 25
-2040 if fnci(2) then if (a$ = "e" or a$ = "E") then ar = ar + 1
-2045 if fnci(4) then if (a$ = "s" or a$ = "S") then ar = ar + 25
-2050 if fnci(8) then if (a$ = "w" or a$ = "W") then ar = ar - 1
+2030 m = map(i, 3) <> 0 or map(i, 4)<>0
+2035 if m then if (a$="p" or a$="P") then gosub 4000
+2040 if fnci(1) then if (a$ = "n" or a$ = "N") then ar = ar - 25
+2045 if fnci(2) then if (a$ = "e" or a$ = "E") then ar = ar + 1
+2050 if fnci(4) then if (a$ = "s" or a$ = "S") then ar = ar + 25
+2055 if fnci(8) then if (a$ = "w" or a$ = "W") then ar = ar - 1
 2999 return
 
 3000 rem combat routine
 3005 i = ar
 3010 m = map(i, 2)
-3015 cs = ms(m, 3) * rnd(1) - at * rnd(1)
+3015 cs = (ms(m, 3) * rnd(1)) - (at * rnd(1))
 3020 if cs > 0 goto 3050
 3025 rem monster hit
 3030 print "player hits the monster!"
@@ -143,10 +147,62 @@
 
 4000 rem pick-up routine
 4005 i = ar
-4010 print "You pick up the treasure!"
-4015 as = as + 1
-4020 map(i, 3) = 0
+4010 if map(i, 3) = 0 then goto 4100 : rem treasure
+4015 print "You pick up the treasure!"
+4020 as = as + 1
+4025 map(i, 3) = 0
+4030 goto 4999
+4100 if map(i, 4) = 0 then goto 4999 : rem item
+4105 m = map(i, 4) : map(i, 4) = 0
+4110 if ai = 0 goto 4200 : rem drop
+4115 q = ai : gosub 7200 : print "You drop the " l$
+4120 map(i, 4) = ai
+4125 at = at - ai : rem str
+4200 q = m : gosub 7200 : print "You pick up the " l$
+4205 ai = m
+4210 at = at + ai : rem str
 4999 return
 
+7000 rem creature label setting, input q
+7005 if q = 1 then l$ = "Goblin"
+7010 if q = 2 then l$ = "Elf"
+7015 if q = 3 then l$ = "Tribble"
+7020 if q = 4 then l$ = "Wumpus"
+7025 return
 
-9000 print "Thanks for playing."
+7100 rem treasure label setting, input q
+7105 if q = 1 then l$ = "chest!"
+7110 if q = 2 then l$ = "chalice!"
+7115 if q = 3 then l$ = "fleece!"
+7120 if q = 4 then l$ = "harp!"
+7125 return
+
+7200 rem item label setting, input q
+7205 if q = 1 then l$ = "toothpick"
+7210 if q = 2 then l$ = "knife"
+7215 if q = 3 then l$ = "small sword"
+7220 if q = 4 then l$ = "rapier"
+7225 if q = 5 then l$ = "axe"
+7230 if q = 6 then l$ = "double headed axe"
+7235 if q = 7 then l$ = "large sword"
+7240 if q = 8 then l$ = "VERY large sword"
+7245 if q = 9 then l$ = "great axe"
+7250 if q = 10 then l$ = "a VERY large sword, with knobbly bits"
+7255 return
+
+8000 rem intro
+8005 print "A very small adventure!"
+8010 print "-----------------------"
+8015 print "A procedurally generated adventure game, where no"
+8020 print "two adventures are the same."
+8025 print
+8030 print "Try and find all 40 treasures in the 250 room dungeon."
+8035 print
+8040 print "Commands:"
+8045 print "(N)orth, (S)outh, (E)ast, (W)est, (P)ick Up, (H)it"
+8050 print
+8999 return
+
+9000 rem dead
+9005 print "You found "; as; " out of 40 treasures!"
+9010 print "Thanks for playing."
