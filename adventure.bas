@@ -12,9 +12,8 @@
 70 def fncs(x) = (map(i+25,1) and x) = x
 75 def fncw(x) = (map(i-1,1) and x) = x
 
-100 dim map(250, 2) : rem 25 x 10
-105 dim ms(40, 2)
-110 dim mt(20, 2)
+100 dim map(250, 3) : rem 25 x 10, mon, treasure
+105 dim ms(40, 3) : rem lbl, hp, str
 
 120 print "Generating map..."
 125 for i = 1 to 250
@@ -26,14 +25,19 @@
 150 gosub 500 : rem gen monsters
 155 next i
 
-175 rem ar = current room
-180 let ar = int(rnd(1) * 250) + 1
-185 rem ah = current hp
-190 let ah = int(rnd(1) * 10) + 10
+160 print "Generating treasure..."
+165 for i = 1 to 40
+170 gosub 600 : rem gen treasure
+175 next i
+
+180 ar = int(rnd(1) * 250) + 1 : rem cur room
+185 ah = int(rnd(1) * 10) + 10 : rem hp
+186 at = int(rnd(1) * 10) + 1 : rem strength
+190 let as = 0
 
 200 rem game cycle
 210 gosub 1500 : rem print room def
-220 gosub 1600 : rem input next act
+220 gosub 2000 : rem input next act
 230 goto 200
 
 310 goto 9000 : end
@@ -64,51 +68,85 @@
 500 rem generate monster, input: i
 510 ms(i, 1) = int(rnd(1) * 4) + 1 : rem name
 515 ms(i, 2) = int(rnd(1) * 10) + 1 : rem hp
-520 r = int(rnd(1) * 250) + 1 : rem room
-525 if map(r, 1) = 0 then goto 520
-530 map(r, 2) = i
+520 ms(i, 3) = int(rnd(1) * 4) + 1 : rem str
+525 r = int(rnd(1) * 250) + 1 : rem room
+530 if map(r, 1) = 0 then goto 525
+535 map(r, 2) = i
 599 return
 
 600 rem generate treasure, input: i
+605 r = int(rnd(1) * 250) + 1 : rem room
+610 if map(r, 1) = 0 then goto 605
+612 print r
+615 map(r, 3) = int(rnd(1) * 4) + 1 : rem name
 699 return
 
 1500 rem print room output, input: ar
 1505 i = ar
-1510 print "Exits:"; i
+
+1510 print : print "Exits:"; i ;
 1515 if fnci(1) then print "N";
 1520 if fnci(2) then print "E";
 1525 if fnci(4) then print "S";
 1530 if fnci(8) then print "W";
 1535 print
-1540 if map(i, 2) = 0 then goto 1599
-1560 m = map(i, 2)
-1575 if ms(m, 1) = 1 then print "Goblin appeared! HP:"; ms(m, 2)
-1580 if ms(m, 1) = 2 then print "Elf appeared! HP:"; ms(m, 2)
-1585 if ms(m, 1) = 3 then print "Tribble appeared! HP:"; ms(m, 2)
-1590 if ms(m, 1) = 4 then print "Wumpus appeared! HP:"; ms(m, 2)
 
-1599 return
+1600 if map(i, 2) = 0 then goto 1700
+1605 m = map(i, 2)
+1610 if ms(m, 1) = 1 then l$ = "Goblin"
+1615 if ms(m, 1) = 2 then l$ = "Elf"
+1620 if ms(m, 1) = 3 then l$ = "Tribble"
+1625 if ms(m, 1) = 4 then l$ = "Wumpus"
+1630 print l$; " appeared! HP:"; ms(m, 2); "Str: " ms(m, 3)
 
-1600 rem print
+1700 if map(i, 3) = 0 then goto 1990
+1705 m = map(i, 3)
+1710 if m = 1 then l$ = "chest!"
+1715 if m = 2 then l$ = "chalice!"
+1720 if m = 3 then l$ = "fleece!"
+1725 if m = 4 then l$ = "harp!"
+1730 print "Treasure! A golden "; l$; "!"
 
-1610 input "Next action"; a$ : a$ = left$(a$,1)
-1615 i = ar
-1620 if map(i, 2) = 0 then goto 1640
-1625 if (a$ = "h" or a$ = "H") then gosub 2000 : goto 1635
-1630 print "You monster stops you from leaving!" 
-1635 goto 1699
-1640 if fnci(1) then if (a$ = "n" or a$ = "N") then ar = ar - 25
-1645 if fnci(2) then if (a$ = "e" or a$ = "E") then ar = ar + 1
-1650 if fnci(4) then if (a$ = "s" or a$ = "S") then ar = ar + 25
-1655 if fnci(8) then if (a$ = "w" or a$ = "W") then ar = ar - 1
-1699 return
+1990 print "You've scored "; as; "/40"
+1995 print "You have "; ah; " HP"
+1997 print "You have "; at; " Str"
+1999 return
 
-2000 rem combat routine
+2000 input "Next action"; a$ : a$ = left$(a$,1)
 2005 i = ar
-2010 m = map(i, 2)
-2010 ms(m, 2) = ms(m, 2) - 1
-2015 if ms(m, 2) <= 0 then print "Monster died!" : map(i, 2) = 0
-
+2010 if map(i, 2) = 0 then goto 2030
+2015 if (a$ = "h" or a$ = "H") then gosub 3000 : goto 2025
+2020 print "You monster stops you from leaving!" 
+2025 goto 2999 : rem combat end
+2030 if map(i,3)<>0 then if (a$="p" or a$="P") then gosub 4000
+2035 if fnci(1) then if (a$ = "n" or a$ = "N") then ar = ar - 25
+2040 if fnci(2) then if (a$ = "e" or a$ = "E") then ar = ar + 1
+2045 if fnci(4) then if (a$ = "s" or a$ = "S") then ar = ar + 25
+2050 if fnci(8) then if (a$ = "w" or a$ = "W") then ar = ar - 1
 2999 return
+
+3000 rem combat routine
+3005 i = ar
+3010 m = map(i, 2)
+3015 cs = ms(m, 3) * rnd(1) - at * rnd(1)
+3020 if cs > 0 goto 3050
+3025 rem monster hit
+3030 print "player hits the monster!"
+3035 ms(m, 2) = ms(m, 2) - 1
+3040 if ms(m, 2) <= 0 then print "Monster died!" : map(i, 2) = 0
+3045 goto 3999
+3050 rem player hit
+3055 print "monster hits the player!"
+3060 ah = ah - 1
+3065 if ah <= 0 then print "You died!" : goto 9000
+3999 return
+
+4000 rem pick-up routine
+4005 i = ar
+4010 print "You pick up the treasure!"
+4015 as = as + 1
+4020 map(i, 3) = 0
+4999 return
+
 
 9000 print "Thanks for playing."
