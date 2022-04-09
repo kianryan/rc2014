@@ -151,6 +151,7 @@
 4015 print "You pick up the treasure!"
 4020 as = as + 1
 4025 map(i, 3) = 0
+4029 if as > 39 goto 9050 : rem win condition
 4030 goto 4999
 4100 if map(i, 4) = 0 then goto 4999 : rem item
 4105 m = map(i, 4) : map(i, 4) = 0
@@ -204,5 +205,7 @@
 8999 return
 
 9000 rem dead
-9005 print "You found "; as; " out of 40 treasures!"
-9010 print "Thanks for playing."
+9005 print "You found "; as; " out of 40 treasures!" : goto 9999
+9050 print "You found ALL the treasures!  You retire to a life of "
+9060 print "luxury and excess.  Until your next adventure."
+9999 print "Thanks for playing!"
